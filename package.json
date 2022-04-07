@@ -1,0 +1,11 @@
+{
+  "name": "pdf-generator",
+  "version": "1.0.0",
+  "description": "Generate pdf from html",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.3",
+    "puppeteer": "^13.5.2"
+  }
+}
