@@ -20,7 +20,7 @@ docker run -dit -p 3000:3000 pdfgen
 After you run the docker image you can use it easily like.
 
 ```bash
-curl "localhost:3000?content=%3Ch1%3EHello%20from%20pdfgen%3C%2Fh1%3E" -o sample.pdf
+curl --location --request POST http://localhost:3000 --header 'Content-Type: application/json' --data-raw '{"html": "<h1>Hello world</h1>"}' -o sample.pdf
 
 open sample.pdf
 ```
