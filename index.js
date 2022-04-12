@@ -1,5 +1,6 @@
 const puppeteer = require("puppeteer")
 const express = require("express")
+const multer = require("multer")
 
 class PDFGenerator {
     constructor(page) {
@@ -21,6 +22,10 @@ async function createBrowser() {
 
 const generatePDFWithHTMLContent = (pdfGenerator) => {
     return (req, res) => {
+        if (!req.body.html) {
+            return res.status(400).send({"error": "HTML content is required"})
+        }
+
         const html = req.body.html
         const options = req.body.options || { format: "a4" }
 
@@ -30,7 +35,11 @@ const generatePDFWithHTMLContent = (pdfGenerator) => {
 
 const generatePDFWithHTMLFile = (pdfGenerator) => {
     return (req, res) => {
-        const htmlFile = req.body.htmlFile
+        if (!req.file || !req.file.buffer) {
+            return res.status(400).send({"error": "HTML file is required"})
+        }
+
+        const htmlFile = req.file.buffer.toString()
         const options = req.body.options || { format: "a4" }
 
         return generateAndSendPDF(pdfGenerator, htmlFile, options, res)
@@ -45,13 +54,14 @@ const generateAndSendPDF = (pdfGenerator, html, options, res) => {
             res.send(pdf)
         }).catch(err => {
             console.error(err)
-            res.status(500).send(err)
+            res.status(500).send({ "error": "PDF could not generated" })
         })
 }
 
 // initialization
 const init = async () => {
     const app = express()
+    const upload = multer()
 
     app.use(express.json())
 
@@ -62,7 +72,7 @@ const init = async () => {
     const pdfGenerator = new PDFGenerator(page)
 
     app.post("/", generatePDFWithHTMLContent(pdfGenerator))
-    app.post("/pdf", generatePDFWithHTMLFile(pdfGenerator))
+    app.post("/upload", upload.single("file"), generatePDFWithHTMLFile(pdfGenerator))
 
     app.listen(3000, () => console.log("Listening on port 3000"))
 }
