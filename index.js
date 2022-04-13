@@ -2,53 +2,47 @@ const puppeteer = require("puppeteer")
 const express = require("express")
 const multer = require("multer")
 
-class PDFGenerator {
-    constructor(page) {
-        this.page = page
-    }
-
-    async generate(html, options = { format: "a4" }) {
-        await this.page.setContent(html)
-        return await this.page.pdf(options)
-    }
-}
-
-async function createBrowser() {
+const createBrowser = async () => {
     return await puppeteer.launch({
         headless: true,
         args: ['--no-sandbox']
     })
 }
 
-const generatePDFWithHTMLContent = (pdfGenerator) => {
+const createBlankPage = async (browser) => {
+    const page = await browser.newPage()
+    page.setJavaScriptEnabled(true)
+    return page
+}
+
+const generatePDF = async (page, html, options) => {
+    await page.setContent(html)
+    return await page.pdf(options)
+}
+
+const generatePDFWithHTMLContent = (page) => {
     return (req, res) => {
         if (!req.body.html) {
-            return res.status(400).send({"error": "HTML content is required"})
+            return res.status(400).send({ "error": "HTML content is required" })
         }
-
-        const html = req.body.html
         const options = req.body.options || { format: "a4" }
-
-        return generateAndSendPDF(pdfGenerator, html, options, res)
+        return generateAndSendPDF(page, req.body.html, options, res)
     }
 }
 
-const generatePDFWithHTMLFile = (pdfGenerator) => {
+const generatePDFWithHTMLFile = (page) => {
     return (req, res) => {
         if (!req.file || !req.file.buffer) {
-            return res.status(400).send({"error": "HTML file is required"})
+            return res.status(400).send({ "error": "HTML file is required" })
         }
-
-        const htmlFile = req.file.buffer.toString()
         const options = req.body.options || { format: "a4" }
-
-        return generateAndSendPDF(pdfGenerator, htmlFile, options, res)
+        return generateAndSendPDF(page, req.file.buffer.toString(), options, res)
     }
 }
 
-const generateAndSendPDF = async (pdfGenerator, html, options, res) => {
+const generateAndSendPDF = async (page, html, options, res) => {
     try {
-        const pdf = await pdfGenerator.generate(html, options)
+        const pdf = await generatePDF(page, html, options)
         res.setHeader("Content-Type", "application/pdf")
         res.setHeader("Content-Length", pdf.length)
         return res.send(pdf)
@@ -66,13 +60,10 @@ const init = async () => {
     app.use(express.json())
 
     const browser = await createBrowser()
-    const page = await browser.newPage()
-    page.setJavaScriptEnabled(false)
+    const page = await createBlankPage(browser)
 
-    const pdfGenerator = new PDFGenerator(page)
-
-    app.post("/", generatePDFWithHTMLContent(pdfGenerator))
-    app.post("/upload", upload.single("file"), generatePDFWithHTMLFile(pdfGenerator))
+    app.post("/", generatePDFWithHTMLContent(page))
+    app.post("/upload", upload.single("file"), generatePDFWithHTMLFile(page))
 
     app.listen(3000, () => console.log("Listening on port 3000"))
 }
