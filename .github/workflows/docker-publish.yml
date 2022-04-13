@@ -22,7 +22,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@master
         with:
-          images: bilginyuksel/rce
+          images: bilginyuksel/pdfgen
 
       - name: Build and push docker image
         uses: docker/build-push-action@master
