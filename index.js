@@ -46,16 +46,16 @@ const generatePDFWithHTMLFile = (pdfGenerator) => {
     }
 }
 
-const generateAndSendPDF = (pdfGenerator, html, options, res) => {
-    pdfGenerator.generate(html, options)
-        .then(pdf => {
-            res.setHeader("Content-Type", "application/pdf")
-            res.setHeader("Content-Length", pdf.length)
-            res.send(pdf)
-        }).catch(err => {
-            console.error(err)
-            res.status(500).send({ "error": "PDF could not generated" })
-        })
+const generateAndSendPDF = async (pdfGenerator, html, options, res) => {
+    try {
+        const pdf = await pdfGenerator.generate(html, options)
+        res.setHeader("Content-Type", "application/pdf")
+        res.setHeader("Content-Length", pdf.length)
+        return res.send(pdf)
+    } catch (err) {
+        console.error(err)
+        return res.status(500).send({ "error": "PDF could not generated" })
+    }
 }
 
 // initialization
