@@ -17,11 +17,12 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
 
 WORKDIR /app
 
-COPY package.json /app
-
-# Puppeteer v10.0.0 works with Chromium 92.
-RUN yarn add express && yarn add puppeteer@10.0.0
-
 COPY . /app
 
+# Puppeteer v10.0.0 works with Chromium 92.
+# RUN yarn add express && yarn add puppeteer@10.0.0 && yarn add multer
+RUN yarn install --frozen-lockfile --production --non-interactive
+
 CMD ["node", "index.js"]
+
+EXPOSE 3000
