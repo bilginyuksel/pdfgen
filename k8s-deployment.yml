@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: pdfgen
-        image: bilginyuksel/amd64-pdfgen:latest
+        image: bilginyuksel/pdfgen:latest
         ports:
           - containerPort: 3000
 ---
