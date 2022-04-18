@@ -25,9 +25,11 @@ kind: Service
 metadata:
   name: pdfgen-service
 spec:
+  type: LoadBalancer
   selector:
     app: pdfgen
   ports:
     - protocol: TCP
       port: 80
       targetPort: 3000
+      nodePort: 30100
